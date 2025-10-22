@@ -12,6 +12,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add an email'],
     unique: true,
+    lowercase: true,
+    trim: true,
     match: [
       /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
       'Please add a valid email'
@@ -31,22 +33,37 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
-  },
+  }
 }, {
   timestamps: true
 });
 
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
-    next();
+// Model returned object'tan password, __v gibi alanları gizleme
+userSchema.set('toJSON', {
+  transform: function(doc, ret, options) {
+    delete ret.password;
+    delete ret.__v;
+    return ret;
   }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
+// pre save hook — return next() ekli, try-catch ile hata yakalama
+userSchema.pre('save', async function(next) {
+  try {
+    if (!this.isModified('password')) return next();
+
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    this.password = await bcrypt.hash(this.password, salt);
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// instance method for password compare
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
 module.exports = mongoose.model('User', userSchema);

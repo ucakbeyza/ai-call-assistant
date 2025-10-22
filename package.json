@@ -1,16 +1,27 @@
 {
   "name": "ai-call-assistant",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-powered call management system with transcription service",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:ci": "jest --ci --coverage --watchAll=false"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "ai",
+    "call-assistant",
+    "transcription",
+    "nodejs",
+    "express",
+    "mongodb",
+    "redis"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "bullmq": "^5.61.0",
@@ -24,6 +35,21 @@
     "redis": "^5.8.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
-  }
+    "@types/jest": "^30.0.0",
+    "jest": "^30.2.0",
+    "mongodb-memory-server": "^9.1.3",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/ai-call-assistant.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/ai-call-assistant/issues"
+  },
+  "homepage": "https://github.com/yourusername/ai-call-assistant#readme"
 }

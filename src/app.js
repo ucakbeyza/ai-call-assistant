@@ -36,6 +36,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/calls', require('./routes/calls'));
+app.use('/api/analytics', require('./routes/analytics'));
 
 app.use((req, res) => {
   res.status(404).json({
@@ -59,3 +60,5 @@ app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
 });
+
+module.exports = app;

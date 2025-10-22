@@ -19,17 +19,33 @@ const transcriptionQueue = new Queue('transcription', {
   },
 });
 
+const generateMockTranscription = (call) => {
+  const participants = call.participants.map(p => p.name).join(', ');
+  const duration = Math.floor((call.endedAt - call.startedAt)/60000) || 15;
+  
+  return `This is a mock transcription for call ${call._id}.
+Meeting participants: ${participants}
+Duration: ${duration} minutes
+Key topics discussed: Project planning, timeline, deliverables
+Action items: Follow up on budget, schedule next meeting`;
+};
+
 const transcriptionWorker = new Worker('transcription', async (job) => {
   const { callId } = job.data;
   
   try {
     console.log(`🎙️ Processing transcription for call: ${callId}`);
-    
+
+    const call = await Call.findById(callId);
+    if (!call) {
+      throw new Error('Call not found');
+    }
+
     await Call.findByIdAndUpdate(callId, {
       transcriptionStatus: 'processing'
     });
 
-    const processingTime = Math.random() * 8000 + 2000;
+    const processingTime = Math.random() * 8000 + 2000; 
     await new Promise(resolve => setTimeout(resolve, processingTime));
 
     const shouldFail = Math.random() < 0.05;
@@ -38,14 +54,7 @@ const transcriptionWorker = new Worker('transcription', async (job) => {
       throw new Error('Simulated transcription failure');
     }
 
-    const mockTranscription = `This is a mock transcription for call ${callId}. 
-    The transcription process has been completed successfully. 
-    This would normally contain the actual transcribed text from the audio file.
-    
-    Meeting participants: John Doe, Jane Smith
-    Duration: 15 minutes
-    Key topics discussed: Project planning, timeline, deliverables
-    Action items: Follow up on budget, schedule next meeting`;
+    const mockTranscription = generateMockTranscription(call);
 
     await Call.findByIdAndUpdate(callId, {
       transcriptionText: mockTranscription,
@@ -57,13 +66,13 @@ const transcriptionWorker = new Worker('transcription', async (job) => {
     
   } catch (error) {
     console.error(`Transcription failed for call: ${callId}`, error);
-    
+
     await Call.findByIdAndUpdate(callId, {
       transcriptionStatus: 'failed',
       transcriptionError: error.message
     });
     
-    throw error;
+    throw error; 
   }
 }, {
   connection: redisConnection,
@@ -78,7 +87,7 @@ const addTranscriptionJob = async (callId) => {
       delay: 1000, 
     });
     
-    console.log(`Added transcription job ${job.id} for call: ${callId}`);
+    console.log(`📝 Added transcription job ${job.id} for call: ${callId}`);
     return job;
   } catch (error) {
     console.error('Error adding transcription job:', error);
@@ -109,5 +118,6 @@ module.exports = {
   transcriptionQueue,
   transcriptionWorker,
   addTranscriptionJob,
-  getQueueStatus
+  getQueueStatus,
+  generateMockTranscription
 };
